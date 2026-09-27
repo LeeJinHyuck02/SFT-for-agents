@@ -13,9 +13,6 @@
 | **3** | Pod | `bash scripts/run_infer.sh --detach ...` | 어댑터 + `data/SFT_think_en_test.jsonl` | `results/*.jsonl`, `results/eval_report_*.json` |
 | **4** | 로컬/Pod | `python -m ugrp.eval_report <결과.jsonl>` | 생성 결과 JSONL 파일 | 형식 준수율 및 복사율 평가 리포트 |
 
-> [!NOTE]
-> **데이터 생성 분리 원칙**: 이 저장소는 데이터를 직접 합성하지 않습니다. 지문 정제, 사고 과정 합성·검수·병합은 전부 [`UGRP2/data`](../data/README.md)에서 수행하며, 본 저장소에는 완성된 파일 3개만 복사하여 사용합니다.
-
 ---
 
 ## 🚀 빠른 실행 가이드 (Quick Start)
