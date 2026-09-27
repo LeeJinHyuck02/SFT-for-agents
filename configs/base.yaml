@@ -1,0 +1,70 @@
+# 학습·추론 공통 설정. 에이전트별 파일(generation.yaml 등)이 이 값을 덮어쓴다.
+# 경로는 UGRP_ROOT(기본: 이 저장소 루트) 기준 상대경로. 절대경로를 쓰면 그대로 쓴다.
+
+model_id: google/gemma-4-31B-it
+# 가중치(~62GB)는 Container Disk(/root)에 받고, /workspace(Volume Disk)에는 코드·체크포인트·결과만 둔다.
+cache_dir: /root/model_cache
+attn_implementation: sdpa
+
+# UGRP2/data의 03 convert가 출력하는 토큰 길이 실측값으로 확정한다 (한국어판 145건 실측 최대 8,376. 영어판은 다시 확인).
+# 03번의 MAX_LEN 상수와 같아야 한다. 초과 샘플은 잘라내지 않고 제외한다.
+max_len: 10240
+
+# valid/test에는 사고 과정 정답이 없어 eval_loss를 계산할 수 없다 (생성 결과로 평가한다).
+# 과적합이 의심될 때만 N>0: train의 마지막 N건(가장 최근 기출)을 학습에서 빼고 epoch마다 eval_loss를 본다.
+# (146건에서 2로 두면 144 = 36 × 4가 되어 샘플 2건짜리 마지막 step도 사라진다)
+train_dev_holdout: 0
+
+# QLoRA: 학습과 추론이 반드시 같은 양자화 설정을 쓴다.
+quantization:
+  load_in_4bit: true
+  bnb_4bit_quant_type: nf4
+  bnb_4bit_use_double_quant: true
+  bnb_4bit_compute_dtype: bfloat16
+
+lora:
+  r: 16
+  lora_alpha: 32
+  lora_dropout: 0.05
+  bias: none
+  # Gemma 4는 멀티모달이므로 언어모델 하위의 linear만 대상으로 한다 (vision tower 제외).
+  # 과적합 시 (q_proj|v_proj)로 축소.
+  target_modules: '.*language_model\..*\.(q_proj|k_proj|v_proj|o_proj|gate_proj|up_proj|down_proj)'
+
+train:
+  num_train_epochs: 5
+  per_device_train_batch_size: 1
+  per_device_eval_batch_size: 1
+  # 2차 학습(누적 16, 30 step)은 사고 형식을 배우지 못했다 (issue/0925/0925.md 5장). 누적 4 → epoch당 37 step, 5 epoch = 185 step.
+  # 체크포인트 이름은 checkpoint-37/74/111/148/185. 3 epoch(111 step) 결과와 5 epoch 결과를 한 번에 비교할 수 있다 (issue/0927/0927_settings_lora.md).
+  gradient_accumulation_steps: 4
+  learning_rate: 2.0e-4     # 유효 배치가 1/4이라 step당 신호가 작아지므로 1e-4 → 2e-4 (issue/0919/0919.md 3절, 0925_plan.md 4절)
+  lr_scheduler_type: cosine
+  warmup_steps: 0.05        # transformers 5: 1 미만의 실수는 전체 step 대비 비율 (warmup_ratio는 삭제됨). 185 step이면 10 step
+  max_grad_norm: 1.0        # 학습 초기의 grad_norm 폭증(2차 학습 최대 3936)을 clipping이 흡수했다. lr을 올렸으므로 유지
+  optim: paged_adamw_8bit
+  bf16: true
+  gradient_checkpointing: true
+  logging_steps: 1
+  save_strategy: epoch
+  save_total_limit: 5       # 5 epoch 체크포인트를 모두 남겨 epoch별 생성 결과를 비교할 수 있게
+  seed: 42
+
+generate:
+  # Gemma 권장 샘플링
+  temperature: 1.0
+  top_p: 0.95
+  top_k: 64
+  do_sample: true
+  max_new_tokens: 6144
+
+# --tiny-debug: GPU 없이 코드 경로만 검증 (양자화 없음, 랜덤 초기화 초소형 모델)
+tiny:
+  hidden_size: 64
+  intermediate_size: 128
+  num_hidden_layers: 2
+  num_attention_heads: 4
+  max_len: 10240
+  max_steps: 2
+  max_new_tokens: 16
+  lora_target_modules: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]

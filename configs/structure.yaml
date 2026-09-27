@@ -1,0 +1,4 @@
+# 기획(structure) 에이전트: 원본 문헌 → 구조도. think 데이터(data/src4.ipynb)가 준비된 뒤 사용한다.
+agent: structure
+generate:
+  max_new_tokens: 4096

@@ -1,0 +1,11 @@
+# Pod는 세션마다 새로 만들어지므로 버전을 고정한다. (2026-09 로컬 CPU에서 import·학습 경로 확인한 조합)
+# torch는 Pod 이미지에 CUDA 빌드가 이미 들어 있으므로 여기서 설치하지 않는다 (재설치 시 수 GB, CUDA 불일치 위험).
+# 로컬 CPU 점검용: pip install torch --index-url https://download.pytorch.org/whl/cpu
+transformers==5.17.0
+trl==1.13.0
+peft==0.21.0
+accelerate==1.15.0
+datasets==5.0.1
+huggingface_hub==1.32.0
+bitsandbytes==0.50.2
+pyyaml==6.0.3

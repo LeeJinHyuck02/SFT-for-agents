@@ -1,0 +1,13 @@
+.venv/
+.env
+__pycache__/
+.pytest_cache/
+*.egg-info/
+model_cache/
+outputs/
+results/
+logs/
+bundles/
+legacy/
+issue/
+data/

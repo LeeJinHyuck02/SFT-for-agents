@@ -1,0 +1,6 @@
+# 생성(generation) 에이전트: 원본 문헌 + 구조 데이터 → 최종 지문
+agent: generation
+# 목표 분량은 지문별 값이다: 정답 지문의 공백 제외 글자 수를 100자 단위로 반올림한 값(prompts.target_length_for)을
+# UGRP2/data의 03 merge가 학습·평가 파일의 target_length와 system 턴에 넣는다 (2026-09-25, issue/0925/0925_plan.md 2절).
+# 정답이 없는 원본 필드 입력만 prompts.DEFAULT_TARGET_LENGTH(1500)를 쓴다.
+# 추론 때 --target-length로 모든 샘플의 값을 덮어쓸 수 있다 (예: 1500 고정 조건으로 비교할 때).

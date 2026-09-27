@@ -1,0 +1,4 @@
+# vLLM 추론 전용 환경 (scripts/setup_vllm.sh가 /root/vllm-env에 설치). 학습 환경(requirements.txt)과 섞지 않는다.
+# torch·transformers는 vLLM이 고정한 버전을 따른다. 설치 전: Gemma 4 LoRA 지원(vLLM PR #39291)이 이 릴리스에 있는지 릴리스 노트로 확인.
+vllm==0.29.0
+pyyaml
